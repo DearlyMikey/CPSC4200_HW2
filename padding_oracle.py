@@ -65,16 +65,17 @@ def main():
 
         for value in range(16, 0, -1):  # Process each byte
             print(f"Byte {value}")
-            padding += 1
-            for j in range(0, 256):
+            padding = 17 - value
+            for j in range(256):
                 bruteforce_block = bytearray(bruteforce_block)
                 bruteforce_block[value-1] = (bruteforce_block[value-1] + 1) % 256
-                # print(bruteforce_block.hex())
                 
                 # joins modified previous block with unchanged current block
                 joined_blocks = bytes(bruteforce_block) + curr_block
 
-                if oracle(oracle_url, [joined_blocks])[0]["status"] == "invalid_mac":
+                response = oracle(oracle_url, [joined_blocks])[0]["status"]
+
+                if response in ["invalid_mac", "valid"]:
                     print(joined_blocks.hex())
                     intermediate[-padding] = bruteforce_block[-padding] ^ padding
                     decrypted_block[-padding] = prev_block[-padding] ^ intermediate[-padding]
@@ -83,22 +84,21 @@ def main():
 
                     # Adjust padding for the next byte
                     for k in range(1, padding + 1):
-                        bruteforce_block[-k] = padding+1 ^ decrypted_block[-k] ^ prev_block[-k]
+                        bruteforce_block[-k] = (padding+1) ^ decrypted_block[-k] ^ prev_block[-k]
                         # print(bruteforce_block.hex())
                     break
-
-                if oracle(oracle_url, [joined_blocks])[0]["status"] == "valid":
-                    print("valid MAC!: " + joined_blocks.hex())
-                # elif oracle(oracle_url, [joined_blocks])[0]["status"] != "valid":
-                #     print("Message invalid", file=sys.stderr)
         
-        decrypted = bytes(decrypted_block) + bytes(decrypted)
-        print("Decrypted message: ", decrypted[:-decrypted[-1]].decode(errors="ignore"))
+        decrypted = bytes(decrypted_block) + decrypted
+        print("Decrypted message: ", decrypted.decode(errors="ignore"))
+    
+    if 1 <= decrypted[-1] <= 16:
+        decrypted = decrypted[:-decrypted[-1]]
 
-
+    if len(decrypted) > 32:
+        decrypted = decrypted[:-32]
                 
 
-    print(decrypted.decode(error="ignore"))
+    print(decrypted.decode(errors="ignore"))
 
 
 if __name__ == '__main__':
