@@ -21,9 +21,6 @@ def oracle(url: str, messages: List[bytes]) -> List[Dict[str, str]]:
         try:
             r = s.post(url, data={"message": [m.hex() for m in messages]})
             r.raise_for_status()
-            response_json = r.json()
-            # for i, msg_status in enumerate(response_json):
-            #     print(f"[*] Response [{i}]: {msg_status['status']}")
             return r.json()
         # Under heavy server load, your request might time out. If this happens,
         # the function will automatically retry in 10 seconds for you.
@@ -81,10 +78,10 @@ def main():
                 response = oracle(oracle_url, [joined_blocks])[0]["status"]
 
                 if response in ["invalid_mac", "valid"]:
-                    print(joined_blocks.hex())
+                    # print(joined_blocks.hex())
                     intermediate[-padding] = bruteforce_block[-padding] ^ padding
-                    decrypted_block[-padding] = prev_block[-padding] ^ intermediate[-padding]
-                    print(decrypted_block.hex())
+                    decrypted_block[-padding] = prev_block[-padding] ^ intermediate[-padding] 
+                    # print(decrypted_block.hex())
 
                     # Adjust padding for the next byte
                     for k in range(1, padding + 1):
@@ -92,7 +89,6 @@ def main():
                     break
         
         decrypted = bytes(decrypted_block) + decrypted
-        print("Decrypted message: ", decrypted.decode(errors="ignore"))
     
     if 1 <= decrypted[-1] <= 16:
         decrypted = decrypted[:-decrypted[-1]]
