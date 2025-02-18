@@ -38,7 +38,10 @@ def main():
     #do all of the conversions
     forged_int = bytes_to_integer(forged_signature)
     forged_three = integer_nthroot(forged_int, e)
-    forged_signature_int = forged_three[0] + (1 if not forged_three[1] else 0)
+    forged_signature_int = forged_three[0]
+    #number must be odd
+    if not forged_three[1]:
+        forged_signature_int = forged_signature_int + 1
     forged_signature_bytes = integer_to_bytes(forged_signature_int, 256)
     print(bytes_to_base64(forged_signature_bytes))
 
