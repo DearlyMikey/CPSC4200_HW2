@@ -52,8 +52,12 @@ def main():
     #
     # TODO: Decrypt the message
     # 
+
+    # Split the message into 16 byte sized blocks
     blocks = [message[i:i + 16] for i in range(0, len(message), 16)]
     decrypted = bytes()
+
+    # Iterate through each block
     for i in range(len(blocks) - 1, 0, -1):
         print(f"Decrypting block {i}...")
         curr_block = blocks[i]
@@ -63,7 +67,8 @@ def main():
         bruteforce_block = bytearray(prev_block)
         padding = 0
 
-        for value in range(16, 0, -1):  # Process each byte
+        # Process each byte
+        for value in range(16, 0, -1):
             print(f"Byte {value}")
             padding = 17 - value
             for j in range(256):
@@ -81,11 +86,9 @@ def main():
                     decrypted_block[-padding] = prev_block[-padding] ^ intermediate[-padding]
                     print(decrypted_block.hex())
 
-
                     # Adjust padding for the next byte
                     for k in range(1, padding + 1):
                         bruteforce_block[-k] = (padding+1) ^ decrypted_block[-k] ^ prev_block[-k]
-                        # print(bruteforce_block.hex())
                     break
         
         decrypted = bytes(decrypted_block) + decrypted
